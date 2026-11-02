@@ -1,4 +1,4 @@
-# Development
+# net-month development
 
 `budget_server.py` contains CSV import, integer-cent calculations, configuration validation, persistence, and the local HTTP server. `app.js`, `budget.html`, and `style.css` provide the browser interface. There is no frontend build step.
 

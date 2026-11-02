@@ -1,4 +1,4 @@
-# Budget Dashboard agent entry point
+# net-month agent entry point
 
 For user setup, read `README.md`, then follow `docs/setup.md` in order. Claude Code also enters through `CLAUDE.md`. Ask only for preferences or authority that cannot be determined from the repository and the user's request.
 

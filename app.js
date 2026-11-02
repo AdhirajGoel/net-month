@@ -268,4 +268,4 @@ root.addEventListener('submit',async e=>{
   if(form.id==='month-form'){await save('month',{month:values.month});month=values.month;render();if(!visibleMonths().includes(values.month))flash('This month is hidden. Restore it in Manage months.');}
  }catch(error){showError(error);}
 });
-refresh().catch(e=>{main.innerHTML='<p class="bm-error">Open the dashboard with Open Budget.command, then reload saved data.</p>';document.getElementById('save-status').textContent='Disconnected';showError(e);});
+refresh().catch(e=>{main.innerHTML='<p class="bm-error">Open the dashboard with Open net-month.command, then reload saved data.</p>';document.getElementById('save-status').textContent='Disconnected';showError(e);});

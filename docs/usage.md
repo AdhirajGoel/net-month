@@ -1,4 +1,4 @@
-# Using the dashboard
+# Using net-month
 
 ## Import and review
 

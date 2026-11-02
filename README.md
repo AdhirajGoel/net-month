@@ -1,4 +1,4 @@
-# Budget Dashboard
+# net-month
 
 I didn’t want to pay another subscription to track my subscriptions.
 
@@ -20,7 +20,7 @@ So I built a local dashboard that counts expenses the way I want: annual costs s
 
 Give Codex or Claude Code this repository and say:
 
-> Read AGENTS.md and set up Budget Dashboard for me on macOS. Ask for my categories, starting budgets, and CSV format, then verify it works.
+> Read AGENTS.md and set up net-month for me on macOS. Ask for my categories, starting budgets, and CSV format, then verify it works.
 
 The agent follows [the setup procedure](docs/setup.md), configures your local files, and checks the app. Empower exports work directly; other banks get a reusable local conversion command. Your agent can help configure the app, but you do not need an AI session to use it each month.
 
@@ -29,8 +29,8 @@ The agent follows [the setup procedure](docs/setup.md), configures your local fi
 Requires **Python 3.9+** on macOS. The app uses only Python’s standard library and your browser.
 
 ```sh
-git clone https://github.com/AdhirajGoel/budget-dashboard.git
-cd budget-dashboard
+git clone https://github.com/AdhirajGoel/net-month.git
+cd net-month
 python3 demo.py
 python3 budget_server.py --data-dir demo-data
 ```
@@ -45,7 +45,7 @@ cp -n config.example.json data/config.json
 python3 budget_server.py
 ```
 
-You can also double-click **Open Budget.command** after setup. See [setup](docs/setup.md) for configuration and [using the dashboard](docs/usage.md) for imports, allocations, credits, and recovery.
+You can also double-click **Open net-month.command** after setup. Existing **Open Budget.command** shortcuts still work. See [setup](docs/setup.md) for configuration and [using the dashboard](docs/usage.md) for imports, allocations, credits, and recovery.
 
 ## How expenses are counted
 

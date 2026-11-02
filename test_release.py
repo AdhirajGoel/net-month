@@ -4,6 +4,7 @@ import io
 import json
 from pathlib import Path
 import tempfile
+import subprocess
 import unittest
 
 import budget_server as b
@@ -19,6 +20,17 @@ class ReleaseTests(unittest.TestCase):
         for target, original in zip([b.CATEGORIES, b.CATEGORY_MAP, b.CATEGORY_GROUPS], self.original):
             target.clear(); target.update(original)
         b.SUBSCRIPTION_CATEGORY, b.FALLBACK_CATEGORY = self.roles
+
+    def test_launchers_forward_arguments_from_another_directory(self):
+        root = Path(__file__).resolve().parent
+        with tempfile.TemporaryDirectory() as directory:
+            for launcher in ['Open net-month.command', 'Open Budget.command']:
+                for argument, status in [('--help', 0), ('--unknown-option', 2)]:
+                    with self.subTest(launcher=launcher, argument=argument):
+                        result = subprocess.run([str(root / launcher), argument], cwd=directory,
+                                                capture_output=True, text=True)
+                        self.assertEqual(result.returncode, status, result.stderr)
+                        self.assertIn('--data-dir', result.stdout + result.stderr)
 
     def config(self):
         return {'categories': {'Home': 1000, 'Memberships': 30, 'Other': 200},

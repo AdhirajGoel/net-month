@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Private, local-only budget dashboard. Python standard library; amounts in cents."""
+"""net-month: private, local-only budget dashboard. Python standard library; amounts in cents."""
 import argparse, copy, csv, datetime as dt, decimal, fcntl, hashlib, io, json, os
 from collections import Counter
 import re, secrets, shutil, tempfile, uuid, webbrowser, threading, time
@@ -599,7 +599,7 @@ def main():
                 if not args.no_browser: webbrowser.open(url)
                 return
             time.sleep(.2)
-        raise RuntimeError('The existing budget server is not responding. Close its Terminal window, then run Open Budget.command again. Your saved data is unchanged.')
+        raise RuntimeError('The existing budget server is not responding. Close its Terminal window, then run Open net-month.command again. Your saved data is unchanged.')
     configure(folder/'config.json')
     store=Store(folder)
     if not store.path.exists():
@@ -607,7 +607,7 @@ def main():
     else: store.load()
     server=BudgetHTTPServer(('127.0.0.1',args.port),Handler); server.store=store; server.token=secrets.token_urlsafe(32); server.previews={}
     url=f'http://127.0.0.1:{server.server_port}/'; runtime.write_text(json.dumps({'url':url,'pid':os.getpid()})); os.chmod(runtime,0o600)
-    print('Budget dashboard: '+url+'\nChanges save to '+str(store.path)+'\nKeep this window open. Press Control-C to stop.',flush=True)
+    print('net-month: '+url+'\nChanges save to '+str(store.path)+'\nKeep this window open. Press Control-C to stop.',flush=True)
     if not args.no_browser: webbrowser.open(url)
     try: server.serve_forever()
     except KeyboardInterrupt: pass

@@ -1,4 +1,4 @@
-# Agent-guided setup
+# net-month setup
 
 Use this procedure with Codex or Claude Code on macOS. The goal is a working local dashboard with the user's own categories and a repeatable import workflow.
 
@@ -65,6 +65,6 @@ Save a synthetic manual expense, reload the page, and verify the entry persists.
 
 ## 5. Launch and hand off
 
-Start the real budget with `python3 budget_server.py` or double-click `Open Budget.command`. Both use `data/`; the server selects a free localhost port and opens the browser. Keep Terminal open while using the app. A second launch reopens the already running dashboard for the same directory.
+Start the real budget with `python3 budget_server.py` or double-click `Open net-month.command`. Both use `data/`; the server selects a free localhost port and opens the browser. Keep Terminal open while using the app. A second launch reopens the already running dashboard for the same directory.
 
 Tell the user where their records and configuration live, how to launch and stop the app, and how to repeat any conversion. Explain that setup is complete only after the checks actually run. A tool's sandbox may require permission for local HTTP or browser execution; report a blocked check precisely instead of claiming it passed.
