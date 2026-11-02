@@ -119,6 +119,16 @@ def main():
                 expect(page.locator('#editor-error')).to_contain_text('Add at least one allocation')
                 page.keyboard.press('Escape')
 
+                # Invalid money formatting must be rejected without a saved import.
+                before_invalid_import = store.path.read_bytes()
+                page.get_by_role('button', name='Import CSV', exact=True).click()
+                malformed = header + '2026-10-01,Demo card,Synthetic purchase,Groceries,"-12,34"\n'
+                page.locator('#import-file').set_input_files({'name': 'bad-amount.csv', 'mimeType': 'text/csv', 'buffer': malformed.encode()})
+                expect(page.locator('#editor-error')).to_contain_text('CSV row 2:')
+                expect(page.get_by_role('button', name='Confirm import', exact=True)).to_have_count(0)
+                assert store.path.read_bytes() == before_invalid_import
+                page.keyboard.press('Escape')
+
                 # Folder imports accept uppercase extensions and exact overlaps remain explicit.
                 page.get_by_role('button', name='Import CSV', exact=True).click()
                 page.get_by_text('Or use a CSV already in the budget folder', exact=True).click()

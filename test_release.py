@@ -1,4 +1,6 @@
 import copy
+import csv
+import io
 import json
 from pathlib import Path
 import tempfile
@@ -23,6 +25,71 @@ class ReleaseTests(unittest.TestCase):
                 'category_map': {'rent': 'Home', 'shopping': 'Other'},
                 'subscription_category': 'Memberships', 'fallback_category': 'Other',
                 'groups': {'Essentials': ['Home'], 'Flexible': ['Memberships', 'Other']}}
+
+    def export_amount(self, amount, legacy=False):
+        output = io.StringIO(); writer = csv.writer(output)
+        if legacy:
+            writer.writerow(['Date', 'Original Date', 'Account Name', 'Name', 'Amount', 'Category'])
+            writer.writerow(['2026-10-01', '2026-10-01', 'Demo card', 'Synthetic purchase', amount, 'Groceries'])
+        else:
+            writer.writerow(['Date', 'Account', 'Description', 'Category', 'Amount'])
+            writer.writerow(['2026-10-01', 'Demo card', 'Synthetic purchase', 'Groceries', amount])
+        return output.getvalue()
+
+    def test_import_money_formats_and_legacy_signs(self):
+        accepted = {'-1,234.56': -123456, '-$12.34': -1234, '$-12.34': -1234,
+                    ' $1,234.50 ': 123450, '+12.3': 1230, '1000': 100000,
+                    '-1,234,567.89': -123456789}
+        for legacy in [False, True]:
+            for text, expected in accepted.items():
+                with self.subTest(text=text, legacy=legacy):
+                    state = b.empty()
+                    preview = b.preview_import(state, self.export_amount(text, legacy), 'synthetic.csv')
+                    b.commit_import(state, preview, {})
+                    with tempfile.TemporaryDirectory() as directory:
+                        store = b.Store(directory); store.save(state)
+                        saved = store.load()['transactions'][0]
+                    self.assertEqual(saved['cents'], expected * (-1 if legacy else 1))
+                    self.assertEqual(saved['original_amount'], text)
+
+    def test_malformed_amounts_fail_before_import(self):
+        rejected = ['-12,34', '-1,23.45', '-1$2.34', '1,,234', '12,3456', '1234,567',
+                    '1.234,56', '1,234.', '$$12', '$-+12', '1 234.56', '1e3',
+                    'NaN', 'Infinity', '12.345', '', '0', '-0.00']
+        for legacy in [False, True]:
+            for text in rejected:
+                with self.subTest(text=text, legacy=legacy):
+                    state = demo_state(); original = copy.deepcopy(state)
+                    with self.assertRaisesRegex(b.Invalid, 'CSV row 2:'):
+                        b.preview_import(state, self.export_amount(text, legacy), 'synthetic.csv')
+                    self.assertEqual(state, original)
+
+    def test_snapshot_preserves_order_and_multiple_credit_endpoints(self):
+        state = b.empty()
+        for date, amount, description, kind, allocations in [
+            ('2026-01-01', '-100.01', 'Annual', 'expense',
+             [{'month': '2026-03', 'amount': '33.33'}, {'month': '2026-01', 'amount': '33.34'}, {'month': '2026-02', 'amount': '33.34'}]),
+            ('2026-01-02', '-60', 'Dinner', 'expense', []),
+            ('2026-04-01', '30', 'Shared credit', 'refund', []),
+            ('2026-05-01', '10', 'Partial credit', 'reimbursement', []),
+        ]:
+            b.mutate(state, 'transaction', dict(date=date, amount=amount, description=description,
+                     kind=kind, category='Miscellaneous', allocations=allocations))
+        annual, dinner, shared, partial = state['transactions']
+        b.mutate(state, 'links', {'id': shared['id'], 'links': [
+            {'expense_id': dinner['id'], 'amount': '10'}, {'expense_id': annual['id'], 'amount': '20'}]})
+        b.mutate(state, 'links', {'id': partial['id'], 'links': [{'expense_id': annual['id'], 'amount': '5'}]})
+        original = copy.deepcopy(state); result = b.snapshot(state)
+        self.assertEqual(state, original)
+        a, d, c, p = result['transactions']
+        self.assertEqual(a['allocations'], state['allocations'][:3])
+        self.assertEqual(a['links'], state['links'][1:])
+        self.assertEqual(d['links'], state['links'][:1])
+        self.assertEqual(c['links'], state['links'][:2])
+        self.assertEqual(p['links'], state['links'][2:])
+        self.assertEqual([t['linked_cents'] for t in result['transactions']], [2500, 1000, 3000, 500])
+        self.assertEqual([result['summaries'][m]['total'] for m in ['2026-01', '2026-02', '2026-03']], [7500, 2501, 2500])
+        self.assertEqual(result['summaries']['2026-05']['unresolved_cents'], 500)
 
     def test_custom_categories_import_subscription_roundtrip(self):
         with tempfile.TemporaryDirectory() as directory:

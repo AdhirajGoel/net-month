@@ -35,7 +35,7 @@ If records already exist, retain their category names and matching configuration
 
 ## 3. Prepare imports
 
-Current Empower CSVs use `Date,Account,Description,Category,Amount`. Dates are `YYYY-MM-DD`; charges are negative and credits are positive. Older Empower files with `Date,Original Date,Account Name,Name,Amount,Category` are also supported; their positive charges are inverted during preview. Optional institution/account identifiers distinguish otherwise similar older accounts locally.
+Current Empower CSVs use `Date,Account,Description,Category,Amount`. Dates are `YYYY-MM-DD`; charges are negative and credits are positive. Amounts use a decimal point and at most two decimal places. Optional dollar signs and correctly grouped thousands separators are accepted (`-$12.34`, `$-12.34`, `-1,234.56`); malformed or locale-ambiguous amounts such as `-12,34` are rejected before normalization. Older Empower files with `Date,Original Date,Account Name,Name,Amount,Category` are also supported; their positive charges are inverted during preview. Optional institution/account identifiers distinguish otherwise similar older accounts locally.
 
 For another institution, create a small reusable converter under ignored `local/`, with its output under `data/`. It should:
 
@@ -57,7 +57,7 @@ python3 demo.py
 python3 budget_server.py --data-dir demo-data
 ```
 
-If `demo-data/` already exists, reuse it only if the user wants to preserve that demo, or create a fresh named directory with `python3 demo.py --data-dir local/demo-check`. Never delete a directory to make a test pass.
+If `demo-data/` already exists, reuse it only if the user wants to preserve that demo, or create a fresh named directory with `python3 demo.py --data-dir local/demo-check` and launch it with `python3 budget_server.py --data-dir local/demo-check`. Never delete a directory to make a test pass.
 
 In the demo, select October 2026. Verify net allocated spending of **$2,568.00**, annual insurance net of **$80.00**, and Groceries+Food net of **$360.00**. In Transactions, the $1,200 insurance charge retains its August date and has twelve monthly allocations. The $80 November dinner repayment links to the October $120 dinner.
 

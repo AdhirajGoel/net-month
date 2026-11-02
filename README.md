@@ -6,7 +6,7 @@ So I built a local dashboard that counts expenses the way I want: annual costs s
 
 ![Monthly budget showing planned spending, allocated expenses, and linked credits using synthetic transactions](docs/images/monthly.png)
 
-*The October demo includes an annual insurance allocation and a dinner reimbursement received in November.*
+*October counts $80 of the annual insurance bill after its refund, and $40 for a $120 dinner after an $80 repayment received in November. All records shown are synthetic.*
 
 ## What it does
 
@@ -15,14 +15,6 @@ So I built a local dashboard that counts expenses the way I want: annual costs s
 - **Import and reconcile.** Import Empower CSVs, preview overlaps, and reconcile manual entries without losing their allocations or notes. Other bank exports can be converted locally by your coding agent.
 - **Review spending.** Search and sort transactions, detect fixed monthly subscriptions, edit monthly budgets, compare trends, and hide months without deleting records.
 - **Keep your records.** Original exports, transaction edits, and linked credits stay available. Saves are atomic and keep the latest 30 backups.
-
-![Annual insurance transaction with its original charge preserved and twelve monthly allocations](docs/images/annual-allocation.png)
-
-*A later $240 refund reduces each $100 allocation to $80.*
-
-![An eighty-dollar reimbursement linked to a one-hundred-twenty-dollar dinner purchase](docs/images/repayment.png)
-
-*The repayment reduces October’s dinner cost to $40, although the money arrived in November.*
 
 ## Set it up with your agent
 
@@ -54,6 +46,26 @@ python3 budget_server.py
 ```
 
 You can also double-click **Open Budget.command** after setup. See [setup](docs/setup.md) for configuration and [using the dashboard](docs/usage.md) for imports, allocations, credits, and recovery.
+
+## How expenses are counted
+
+The dashboard keeps the original transaction and calculates its effect on each month separately. Linking a later credit updates those monthly costs automatically.
+
+| Example | What the dashboard calculates |
+| --- | --- |
+| A $1,200 annual bill | Twelve $100 monthly allocations, with the original charge and payment date preserved. |
+| A later $240 refund on that bill | A $20 reduction in every allocated month, leaving $80 per month. |
+| An $80 November repayment for a $120 October dinner | October's dinner cost becomes $40; the repayment retains its November date. |
+
+Partial credits can cover several purchases, and several credits can offset one purchase. Credits cannot exceed the expense or the amount received. Proportional calculations conserve every cent, including amounts that do not divide evenly.
+
+![Annual insurance transaction with its original charge preserved and twelve monthly allocations](docs/images/annual-allocation.png)
+
+*A later $240 refund reduces each $100 allocation to $80.*
+
+![An eighty-dollar reimbursement linked to a one-hundred-twenty-dollar dinner purchase](docs/images/repayment.png)
+
+*The repayment reduces October’s dinner cost to $40, although the money arrived in November.*
 
 ## Development
 

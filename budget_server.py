@@ -150,7 +150,10 @@ def _parse_export(text,name):
         if not any(row.values()): continue
         try:
             date=valid_date(row['Date'].strip())
-            amount=cents(row['Amount'].replace(',','').replace('$','').strip())*(-1 if legacy else 1)
+            amount_text=row['Amount'].strip()
+            if not re.fullmatch(r'(?:[+-]?\$?|\$[+-]?)(?:[0-9]+|[0-9]{1,3}(?:,[0-9]{3})+)(?:\.[0-9]{1,2})?',amount_text):
+                raise Invalid('Use decimal dollars with correctly grouped thousands, such as -1,234.56 or -$12.34.')
+            amount=cents(amount_text.replace(',','').replace('$',''))*(-1 if legacy else 1)
             if not amount: raise Invalid('Zero-amount rows need to be removed from this import copy.')
             description=((row.get('Custom Name') or row.get('Name')) if legacy else row['Description']).strip()
             account=(row['Account Name'] if legacy else row['Account']).strip()
@@ -285,12 +288,18 @@ def split_proportionally(total,allocations):
 
 def snapshot(s):
     out=copy.deepcopy(s); summaries={}
+    allocations_by_id={}; links_by_id={}
+    for allocation in s['allocations']:
+        allocations_by_id.setdefault(allocation['transaction_id'],[]).append(allocation)
+    for link in s['links']:
+        links_by_id.setdefault(link['credit_id'],[]).append(link)
+        links_by_id.setdefault(link['expense_id'],[]).append(link)
     for month,budget in s['budgets'].items():
         summaries[month]={'budget':budget,'categories':{c:{'gross':0,'credits':0,'net':0,'count':0} for c in CATEGORIES},'unresolved':0,'unresolved_cents':0,'missing':[],'reviewed':s['months'][month]['reviewed']}
     for t in out['transactions']:
         t.setdefault('subcategory','')
-        t['allocations']=[a for a in s['allocations'] if a['transaction_id']==t['id']]
-        t['links']=[l for l in s['links'] if l['credit_id']==t['id'] or l['expense_id']==t['id']]
+        t['allocations']=allocations_by_id.get(t['id'],[])
+        t['links']=links_by_id.get(t['id'],[])
         t['linked_cents']=sum(l['cents'] for l in t['links'])
         t['review_reason']=''
         if t['kind']=='review': t['review_reason']='Choose a category and treatment.'
