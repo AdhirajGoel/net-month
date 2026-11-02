@@ -89,5 +89,26 @@ const run=code=>vm.runInContext(code,context);
  release();await pending;
  assert.equal(run('saving'),false);
  assert.equal(element('save-status').textContent,'Saved locally');
- console.log('Month selection, coverage, save failures and concurrent-save regression checks passed.');
+ // Annual allocations must not push selected-month history into the future.
+ for(let i=0;i<33;i++){
+  const m=`${2025+Math.floor(i/12)}-${String(i%12+1).padStart(2,'0')}`;
+  fixture.budgets[m]=fixture.budgets['2026-10'];
+  fixture.months[m]={reviewed:false,zero_categories:[]};
+  fixture.summaries[m]=fixture.summaries['2026-10'];
+ }
+ const chartMonths=()=>[...element('main-content').innerHTML.matchAll(/class="bm-history-month">([0-9-]+)/g)].map(m=>m[1]);
+ const categoryMonths=()=>[...element('main-content').innerHTML.matchAll(/<th>([0-9-]+)<\/th>/g)].map(m=>m[1]);
+ run("view='trends';month='2026-10';render()");
+ assert.deepEqual(chartMonths(),['2025-11','2025-12','2026-01','2026-02','2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10']);
+ assert.deepEqual(categoryMonths(),['2026-05','2026-06','2026-07','2026-08','2026-09','2026-10']);
+ fixture.months['2026-09'].excluded=true;
+ run("temporaryHidden.add('2026-08');render()");
+ assert.deepEqual(categoryMonths(),['2026-03','2026-04','2026-05','2026-06','2026-07','2026-10']);
+ run("month='2027-09';render()");
+ assert.equal(chartMonths().at(-1),'2027-09','Future allocations remain available when explicitly selected');
+ assert.equal(categoryMonths().at(-1),'2027-09');
+ run("month='2025-01';render()");
+ assert.deepEqual(chartMonths(),['2025-01']);
+ assert.deepEqual(categoryMonths(),['2025-01']);
+ console.log('Month selection, trend history, coverage, save failures and concurrent-save regression checks passed.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

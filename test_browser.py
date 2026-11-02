@@ -7,6 +7,7 @@ from pathlib import Path
 
 from budget_server import BudgetHTTPServer, Handler, Store, empty, mutate, preview_import, commit_import, configure, ensure_month
 from playwright.sync_api import sync_playwright, expect
+from demo import demo_state
 
 
 def main():
@@ -197,7 +198,7 @@ def main():
                         page.screenshot(path=str(args.screenshots / 'mobile-transactions.png'), full_page=True)
                     page.get_by_role('tab', name='Monthly', exact=True).click()
                 page.get_by_role('tab', name='Trends', exact=True).click()
-                expect(page.locator('.bm-history-col')).to_have_count(4)
+                expect(page.locator('.bm-history-col')).to_have_count(2)
                 page.get_by_role('tab', name='Review', exact=True).click()
                 expect(page.locator('#main-content')).to_contain_text('Confirm monthly coverage')
 
@@ -215,6 +216,32 @@ def main():
                 page.get_by_role('button', name='Reload saved data', exact=True).click()
                 expect(page.locator('#save-status')).to_have_text('Saved locally')
                 assert len(store.load()['transactions']) == before + 1
+                # The shipped demo's annual allocations must not displace imported history.
+                store.save(demo_state())
+                page.reload()
+                expect(page.locator('#save-status')).to_have_text('Saved locally')
+                page.locator('#month-select').select_option('2026-10')
+                page.get_by_role('tab', name='Trends', exact=True).click()
+                expect(page.locator('.bm-history-month')).to_have_text(['2026-08Reviewed', '2026-09Reviewed', '2026-10Reviewed'])
+                expect(page.locator('.bm-table thead th')).to_have_text(['Category', '2026-08', '2026-09', '2026-10'])
+                expect(page.locator('.bm-panel-head').last).to_contain_text('through October 2026')
+                expect(page.locator('.bm-total td').last).to_have_text('$2,568.00')
+                page.locator('#month-select').select_option('2026-09')
+                expect(page.locator('.bm-history-col')).to_have_count(2)
+                expect(page.locator('.bm-table thead th')).to_have_text(['Category', '2026-08', '2026-09'])
+                page.locator('#month-select').select_option('2026-10')
+                page.get_by_role('button', name='Add manual entry', exact=True).click()
+                page.locator('[name=description]').fill('New annual bill')
+                page.locator('[name=amount]').fill('-1200')
+                page.locator('#split-count').fill('12')
+                page.get_by_role('button', name='Split evenly', exact=True).click()
+                page.get_by_role('button', name='Save transaction', exact=True).click()
+                expect(page.locator('#editor')).not_to_be_visible()
+                expect(page.locator('.bm-table thead th')).to_have_text(['Category', '2026-08', '2026-09', '2026-10'])
+                page.locator('#month-select').select_option('2027-09')
+                expect(page.locator('.bm-history-col')).to_have_count(12)
+                expect(page.locator('.bm-table thead th')).to_have_text(['Category', '2027-04', '2027-05', '2027-06', '2027-07', '2027-08', '2027-09'])
+
                 # A setup agent can supply entirely different category names and groups.
                 config = {'categories': {'Home': 1000, 'Memberships': 30, 'Other': 100},
                           'category_map': {'rent': 'Home'}, 'subscription_category': 'Memberships',
