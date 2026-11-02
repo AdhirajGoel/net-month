@@ -1,0 +1,20 @@
+# Local records, exports and agent-created conversion scripts.
+data/
+demo-data/
+local/
+config.json
+*.csv
+!examples/*.csv
+backups/
+imports/
+.budget*
+.dashboard-*
+.env*
+!.env.example
+*.log
+.venv/
+__pycache__/
+.DS_Store
+
+# Local release coordination, never part of the repository payload.
+.release-review/

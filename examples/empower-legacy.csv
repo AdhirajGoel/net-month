@@ -1,0 +1,4 @@
+Date,Original Date,Account Name,Name,Amount,Category
+2026-10-05,2026-10-05,Demo card,Example Grocery,40.00,Groceries
+2026-10-08,2026-10-08,Demo card,Example Grocery refund,-10.00,Groceries
+2026-10-10,2026-10-10,Demo checking,Card payment,30.00,Credit Card Payments

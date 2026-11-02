@@ -1,0 +1,55 @@
+{
+  "categories": {
+    "Rent + utilities": 0,
+    "Car loan": 0,
+    "Auto insurance": 0,
+    "Groceries+Food": 0,
+    "Gas": 0,
+    "Subscriptions": 0,
+    "Miscellaneous": 0
+  },
+  "category_map": {
+    "rent": "Rent + utilities",
+    "utilities": "Rent + utilities",
+    "auto insurance": "Auto insurance",
+    "groceries": "Groceries+Food",
+    "restaurants": "Groceries+Food",
+    "dining & drinks": "Groceries+Food",
+    "food & dining": "Groceries+Food",
+    "fast food": "Groceries+Food",
+    "coffee shops": "Groceries+Food",
+    "gasoline/fuel": "Gas",
+    "dues & subscriptions": "Subscriptions",
+    "general merchandise": "Miscellaneous",
+    "automotive": "Miscellaneous",
+    "travel": "Miscellaneous",
+    "clothing/shoes": "Miscellaneous",
+    "telephone": "Miscellaneous",
+    "electronics": "Miscellaneous",
+    "service charges/fees": "Miscellaneous",
+    "other expenses": "Miscellaneous",
+    "personal care": "Miscellaneous",
+    "charitable giving": "Miscellaneous",
+    "entertainment": "Miscellaneous",
+    "shopping": "Miscellaneous",
+    "entertainment & rec.": "Miscellaneous",
+    "fees": "Miscellaneous",
+    "medical": "Miscellaneous",
+    "healthcare": "Miscellaneous"
+  },
+  "subscription_category": "Subscriptions",
+  "fallback_category": "Miscellaneous",
+  "groups": {
+    "Needs": [
+      "Rent + utilities",
+      "Car loan",
+      "Auto insurance",
+      "Groceries+Food",
+      "Gas"
+    ],
+    "Wants": [
+      "Subscriptions",
+      "Miscellaneous"
+    ]
+  }
+}
