@@ -1,6 +1,8 @@
 # net-month development
 
-`budget_server.py` contains CSV import, integer-cent calculations, configuration validation, persistence, and the local HTTP server. `app.js`, `budget.html`, and `style.css` provide the browser interface. There is no frontend build step.
+This is a static release with no ongoing maintenance or support planned.
+
+`budget_server.py` contains CSV import, integer-cent calculations, configuration validation, persistence, and the local HTTP server. `app.js`, `budget.html`, and `style.css` provide the browser interface. Amounts are stored as integer cents in memory and decimal dollars in CSV. There is no frontend build step or runtime dependency beyond Python’s standard library and a browser.
 
 The server binds only to `127.0.0.1`, checks the Host and write Origin, and requires a per-run token for API requests. A process lock prevents simultaneous writers to the same data directory; revision checks reject stale browser writes. Saves use a temporary file, flush/fsync and atomic replacement.
 
@@ -39,4 +41,4 @@ python3 -m venv .venv
 .venv/bin/python capture_demo.py
 ```
 
-Browser tests start a temporary local server with synthetic records and a fresh Chromium context. They cover imports, allocations, linked credits, filters, month visibility, keyboard navigation, save-error recovery, and desktop/mobile/dark layouts. `capture_demo.py` regenerates the README screenshots from the real app and checks the displayed example totals. Never substitute screenshots of real financial records.
+Browser tests start a temporary local server with synthetic records and a fresh Chromium context. They cover imports, allocations, linked credits, filters, month visibility, keyboard navigation, save-error recovery, and desktop/mobile/dark layouts. `capture_demo.py` regenerates the README screenshot from the real app and checks the displayed example totals. Never substitute screenshots of real financial records.

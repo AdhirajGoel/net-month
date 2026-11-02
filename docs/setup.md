@@ -17,7 +17,12 @@ No API keys, bank passwords, or paid services are required. If Python is missing
 
 ## 2. Configure an empty budget
 
-Create `data/` and copy `config.example.json` to `data/config.json` only if that file does not already exist. Keep local files out of Git.
+From the repository root, create `data/` and copy `config.example.json` to `data/config.json` only if that file does not already exist. Keep local files out of Git.
+
+```sh
+mkdir -p data
+cp -n config.example.json data/config.json
+```
 
 The configuration contains:
 
@@ -65,6 +70,6 @@ Save a synthetic manual expense, reload the page, and verify the entry persists.
 
 ## 5. Launch and hand off
 
-Start the real budget with `python3 budget_server.py` or double-click `Open net-month.command`. Both use `data/`; the server selects a free localhost port and opens the browser. Keep Terminal open while using the app. A second launch reopens the already running dashboard for the same directory.
+Start the real budget with `python3 budget_server.py` or double-click `Open net-month.command`. Both use `data/`; the server selects a free localhost port and opens the browser. Keep Terminal open while using the app. A second launch reopens the already running dashboard for the same directory. Existing `Open Budget.command` shortcuts still work.
 
 Tell the user where their records and configuration live, how to launch and stop the app, and how to repeat any conversion. Explain that setup is complete only after the checks actually run. A tool's sandbox may require permission for local HTTP or browser execution; report a blocked check precisely instead of claiming it passed.
