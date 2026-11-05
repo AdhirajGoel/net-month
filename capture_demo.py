@@ -29,7 +29,10 @@ def main():
                 expect(page.locator('.bm-brand')).to_have_text('net-month')
                 expect(page.locator('#save-status')).to_have_text('Saved locally')
                 page.locator('#month-select').select_option('2026-10')
-                expect(page.locator('#main-content')).to_contain_text('$2,568.00')
+                expect(page.locator('.bm-category')).to_have_text([f'Category {i}' for i in range(1, 8)])
+                expect(page.locator('.bm-value')).to_have_text(['$2,000.00', '$1,600.00', '$400.00'])
+                expect(page.locator('.bm-total td')).to_have_text(
+                    ['Total', '$2,000.00', '$1,800.00', '$200.00', '$1,600.00', '-$400.00'])
                 page.screenshot(path=str(args.output / 'monthly.png'), full_page=True)
                 assert not errors, errors
                 context.close(); browser.close()

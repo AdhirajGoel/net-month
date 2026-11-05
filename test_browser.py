@@ -7,7 +7,7 @@ from pathlib import Path
 
 from budget_server import BudgetHTTPServer, Handler, Store, empty, mutate, preview_import, commit_import, configure, ensure_month
 from playwright.sync_api import sync_playwright, expect
-from demo import demo_state
+from demo import create_demo
 
 
 def main():
@@ -217,7 +217,8 @@ def main():
                 expect(page.locator('#save-status')).to_have_text('Saved locally')
                 assert len(store.load()['transactions']) == before + 1
                 # The shipped demo's annual allocations must not displace imported history.
-                store.save(demo_state())
+                demo_folder = Path(folder) / 'demo'; create_demo(demo_folder)
+                store = Store(demo_folder); server.store = store
                 page.reload()
                 expect(page.locator('#save-status')).to_have_text('Saved locally')
                 page.locator('#month-select').select_option('2026-10')
@@ -225,7 +226,7 @@ def main():
                 expect(page.locator('.bm-history-month')).to_have_text(['2026-08Reviewed', '2026-09Reviewed', '2026-10Reviewed'])
                 expect(page.locator('.bm-table thead th')).to_have_text(['Category', '2026-08', '2026-09', '2026-10'])
                 expect(page.locator('.bm-panel-head').last).to_contain_text('through October 2026')
-                expect(page.locator('.bm-total td').last).to_have_text('$2,568.00')
+                expect(page.locator('.bm-total td').last).to_have_text('$1,600.00')
                 page.locator('#month-select').select_option('2026-09')
                 expect(page.locator('.bm-history-col')).to_have_count(2)
                 expect(page.locator('.bm-table thead th')).to_have_text(['Category', '2026-08', '2026-09'])
@@ -246,7 +247,7 @@ def main():
                 config = {'categories': {'Home': 1000, 'Memberships': 30, 'Other': 100},
                           'category_map': {'rent': 'Home'}, 'subscription_category': 'Memberships',
                           'fallback_category': 'Other', 'groups': {'Essentials': ['Home'], 'Flexible': ['Memberships', 'Other']}}
-                config_path = Path(folder) / 'config.json'
+                config_path = store.folder / 'config.json'
                 config_path.write_text(json.dumps(config))
                 configure(config_path)
                 custom = empty(); ensure_month(custom, '2026-10'); store.save(custom)

@@ -8,7 +8,7 @@ Import Empower CSVs, review recurring subscriptions, and compare monthly spendin
 
 ![net-month monthly view with planned spending and net allocated expenses](docs/images/monthly.png)
 
-*Synthetic records for October 2026. An $80 repayment received in November reduces October’s $120 dinner cost to $40.*
+*Synthetic records for October 2026, using generic categories. A $100 repayment received in November reduces October’s $300 dinner cost to $200.*
 
 ## Try the demo
 

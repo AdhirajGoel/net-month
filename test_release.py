@@ -8,7 +8,7 @@ import subprocess
 import unittest
 
 import budget_server as b
-from demo import create_demo, demo_state
+from demo import create_demo, DEMO_CONFIG
 
 
 class ReleaseTests(unittest.TestCase):
@@ -68,10 +68,13 @@ class ReleaseTests(unittest.TestCase):
         rejected = ['-12,34', '-1,23.45', '-1$2.34', '1,,234', '12,3456', '1234,567',
                     '1.234,56', '1,234.', '$$12', '$-+12', '1 234.56', '1e3',
                     'NaN', 'Infinity', '12.345', '', '0', '-0.00']
+        state = b.empty()
+        b.mutate(state, 'transaction', dict(date='2026-10-01', amount='-100', description='Existing record',
+                 kind='expense', category='Miscellaneous'))
+        original = copy.deepcopy(state)
         for legacy in [False, True]:
             for text in rejected:
                 with self.subTest(text=text, legacy=legacy):
-                    state = demo_state(); original = copy.deepcopy(state)
                     with self.assertRaisesRegex(b.Invalid, 'CSV row 2:'):
                         b.preview_import(state, self.export_amount(text, legacy), 'synthetic.csv')
                     self.assertEqual(state, original)
@@ -137,17 +140,34 @@ class ReleaseTests(unittest.TestCase):
                 self.assertEqual(b.CATEGORIES, self.original[0])
 
     def test_demo_allocations_credits_and_no_overwrite(self):
-        state = demo_state(); snapshot = b.snapshot(state)
-        self.assertEqual(snapshot['summaries']['2026-10']['categories']['Auto insurance']['net'], 8000)
-        self.assertEqual(snapshot['summaries']['2026-10']['categories']['Groceries+Food']['net'], 36000)
-        self.assertEqual(snapshot['summaries']['2026-11']['categories']['Groceries+Food']['net'], 0)
-        annual = next(t for t in snapshot['transactions'] if t['description'] == 'Annual insurance')
-        self.assertEqual((annual['date'], annual['cents'], len(annual['allocations'])), ('2026-08-10', -120000, 12))
         with tempfile.TemporaryDirectory() as parent:
             folder = Path(parent) / 'demo'; create_demo(folder)
-            original = (folder / 'dashboard_data.csv').read_bytes()
+            self.assertEqual(json.loads((folder / 'config.json').read_text()), DEMO_CONFIG)
+            snapshot = b.snapshot(b.Store(folder).load())
+            categories = [f'Category {i}' for i in range(1, 8)]
+            self.assertEqual(snapshot['categories'], categories)
+            october = snapshot['summaries']['2026-10']
+            self.assertEqual((october['planned'], october['gross'], october['credits'], october['total']),
+                             (200000, 180000, 20000, 160000))
+            self.assertTrue(october['complete'])
+            self.assertTrue(october['reviewed'])
+            self.assertEqual([october['categories'][c]['net'] for c in categories],
+                             [40000, 30000, 20000, 40000, 20000, 10000, 0])
+            for category, row in october['categories'].items():
+                amounts = [october['budget'][category], row['gross'], row['credits'], row['net'],
+                           row['net'] - october['budget'][category]]
+                self.assertTrue(all(value == 0 or 10000 <= abs(value) <= 50000 for value in amounts), category)
+            self.assertEqual(snapshot['summaries']['2026-11']['categories']['Category 4']['net'], 0)
+            annual = next(t for t in snapshot['transactions'] if t['description'] == 'Annual insurance')
+            self.assertEqual((annual['date'], annual['cents'], len(annual['allocations'])),
+                             ('2026-08-10', -360000, 12))
+            self.assertTrue(all(a['cents'] == 30000 for a in annual['allocations']))
+            self.assertEqual(annual['linked_cents'], 120000)
+            dinner = next(t for t in snapshot['transactions'] if t['description'] == 'Dinner with friends')
+            self.assertEqual((dinner['cents'], dinner['linked_cents']), (-30000, 10000))
+            original = {name: (folder / name).read_bytes() for name in ['dashboard_data.csv', 'config.json']}
             with self.assertRaises(FileExistsError): create_demo(folder)
-            self.assertEqual((folder / 'dashboard_data.csv').read_bytes(), original)
+            self.assertEqual({name: (folder / name).read_bytes() for name in original}, original)
 
 
 if __name__ == '__main__':

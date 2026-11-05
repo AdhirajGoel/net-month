@@ -64,7 +64,7 @@ python3 budget_server.py --data-dir demo-data
 
 If `demo-data/` already exists, reuse it only if the user wants to preserve that demo, or create a fresh named directory with `python3 demo.py --data-dir local/demo-check` and launch it with `python3 budget_server.py --data-dir local/demo-check`. Never delete a directory to make a test pass.
 
-In the demo, select October 2026. Verify net allocated spending of **$2,568.00**, annual insurance net of **$80.00**, and Groceries+Food net of **$360.00**. In Transactions, the $1,200 insurance charge retains its August date and has twelve monthly allocations. The $80 November dinner repayment links to the October $120 dinner.
+The demo uses its own `config.json` with Category 1 through Category 7. Select October 2026 and verify net allocated spending of **$1,600.00**, Category 3 net of **$200.00**, and Category 4 net of **$400.00**. In Transactions, the $3,600 annual insurance charge retains its August date and has twelve $300 monthly allocations; its $1,200 linked refund reduces each month by $100. The $100 November dinner repayment links to the October $300 dinner.
 
 Save a synthetic manual expense, reload the page, and verify the entry persists. Stop the demo server. If available, `node test_app.js` and `python3 test_browser.py` automate additional interface checks in fresh synthetic directories. Those checks do not use the user's real records.
 
